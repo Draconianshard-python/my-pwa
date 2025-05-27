@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
     <title>Firefox PWA</title>
     <style>
         body { margin: 0; font-family: "Segoe UI", "Arial", sans-serif; background: #f9f9fb; color: #222; }
@@ -23,31 +22,13 @@
         .toolbar-btn:focus, .toolbar-btn:hover { background: #e0e7ff; }
         .address-bar { flex: 1; display: flex; align-items: center; background: #fff; border: 1px solid #c0c6d4; border-radius: 4px; padding: 5px 10px; margin: 0 8px;}
         .address-bar input { width: 100%; border: none; background: transparent; font-size: 15px; outline: none; color: #212121;}
-        .content { padding: 32px 24px;}
-        .tab-context-menu {
-          position: absolute;
-          background: #fff;
-          border: 1px solid #c0c6d4;
-          border-radius: 4px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          z-index: 100;
-          display: none;
-          min-width: 120px;
-        }
-        .tab-context-menu button {
-          width: 100%;
-          background: none;
-          border: none;
-          padding: 8px 16px;
-          text-align: left;
-          cursor: pointer;
-          font-size: 15px;
-        }
-        .tab-context-menu button:hover {
-          background: #e0e7ff;
-        }
+        .content { padding: 0px; height: calc(100vh - 110px); }
+        iframe { width: 100%; height: 100%; border: none; background: #fff;}
+        .tab-context-menu { position: absolute; background: #fff; border: 1px solid #c0c6d4; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 100; display: none; min-width: 120px; }
+        .tab-context-menu button { width: 100%; background: none; border: none; padding: 8px 16px; text-align: left; cursor: pointer; font-size: 15px;}
+        .tab-context-menu button:hover { background: #e0e7ff;}
         @media (max-width: 600px) {
-            .content { padding: 16px 5px; }
+            .content { padding: 0px; }
             .tab { max-width: 130px; }
         }
         @media (prefers-color-scheme: dark) {
@@ -66,55 +47,276 @@
 <body>
     <div class="browser-chrome">
         <div class="tab-bar" id="tab-bar">
-            <!-- Tabs rendered by JS -->
             <button class="new-tab-btn" id="new-tab-btn" title="New Tab" tabindex="0">
-                <!-- new tab SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
             </button>
         </div>
         <div class="toolbar">
             <button class="toolbar-btn" id="back-btn" title="Back" tabindex="0">
-                <!-- back SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l14 0" /><path d="M5 12l4 4" /><path d="M5 12l4 -4" /></svg>
             </button>
             <button class="toolbar-btn" id="forward-btn" title="Forward" tabindex="0">
-                <!-- forward SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l14 0" /><path d="M13 18l6 -6" /><path d="M13 6l6 6" /></svg>
             </button>
             <button class="toolbar-btn" id="reload-btn" title="Reload" tabindex="0">
-                <!-- reload SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747" /><path d="M20 4v5h-5" /></svg>
             </button>
             <button class="toolbar-btn" id="home-btn" title="Home" tabindex="0">
-                <!-- home SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z" /><path d="M9 3l-6 6" /><path d="M14 3l-7 7" /><path d="M19 3l-7 7" /><path d="M21 6l-4 4" /><path d="M3 10h18" /><path d="M10 10v11" /></svg>
             </button>
             <div class="address-bar">
                 <input type="text" id="address-input" value="https://your-pwa.local/" autocomplete="off" spellcheck="false">
             </div>
             <button class="toolbar-btn" id="share-btn" title="Share" tabindex="0">
-                <!-- share SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 9h-1a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-8a2 2 0 0 0 -2 -2h-1" /><path d="M12 14v-11" /><path d="M9 6l3 -3l3 3" /></svg>
             </button>
             <button class="toolbar-btn" id="settings-btn" title="Settings" tabindex="0">
-                <!-- settings SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 8h4v4h-4z" /><path d="M6 4l0 4" /><path d="M6 12l0 8" /><path d="M10 14h4v4h-4z" /><path d="M12 4l0 10" /><path d="M12 18l0 2" /><path d="M16 5h4v4h-4z" /><path d="M18 4l0 1" /><path d="M18 9l0 11" /></svg>
             </button>
             <button class="toolbar-btn" id="devtools-btn" title="Dev Tools" tabindex="0">
-                <!-- dev tools SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 9l3 3l-3 3" /><path d="M13 15l3 0" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /></svg>
             </button>
         </div>
     </div>
     <div class="content" id="content">
-        <h1>Welcome to Your Firefox-Themed PWA!</h1>
-        <p>This PWA mimics the look of the Firefox browser. You can customize this template further to add more tabs, toolbar buttons, or features.</p>
+        <iframe id="main-frame" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
     <div class="tab-context-menu" id="tab-context-menu">
         <button data-action="reload">Reload Tab</button>
         <button data-action="duplicate">Duplicate Tab</button>
         <button data-action="close">Close Tab</button>
     </div>
-    <script src="app.js"></script>
+    <script>
+    // --- Data URIs for internal "firefox:" pages ---
+    const FIREFOX_PAGES = {
+      "firefox:settings": "data:text/html;base64," + btoa(`
+        <!DOCTYPE html>
+        <html><head><title>Firefox Settings</title><style>
+        body{font-family:sans-serif;padding:2em;}
+        h1{color:#3b5fc9;}
+        ul{line-height:2;}
+        </style></head>
+        <body>
+          <h1>Firefox Settings</h1>
+          <ul>
+            <li><b>Home</b></li>
+            <li>Search</li>
+            <li>Privacy & Security</li>
+            <li>Sync</li>
+            <li>Extensions & Themes</li>
+            <li>Advanced</li>
+          </ul>
+          <p>These are mock settings for demonstration.</p>
+        </body></html>
+      `),
+      "firefox:about": "data:text/html;base64," + btoa(`
+        <!DOCTYPE html>
+        <html><head><title>About Firefox PWA</title><style>
+        body{font-family:sans-serif;padding:2em;} h1{color:#3b5fc9;}
+        </style></head>
+        <body>
+          <h1>About Firefox PWA</h1>
+          <p>Version: 1.0.0<br>
+          This is a Progressive Web App inspired by Firefox.</p>
+          <p>Made with ❤️ and JavaScript.</p>
+        </body></html>
+      `),
+      "firefox:devtools": "data:text/html;base64," + btoa(`
+        <!DOCTYPE html>
+        <html><head><title>DevTools</title><style>
+        body{font-family:monospace;background:#181a1b;color:#ffb300;padding:2em;}
+        h1{color:#ffb300;}
+        pre{background:#232527;padding:1em;border-radius:4px;}
+        </style></head>
+        <body>
+          <h1>DevTools</h1>
+          <p>This is a simulated DevTools page.</p>
+          <pre>Console output:<br>&gt; Hello, World!</pre>
+        </body></html>
+      `)
+    };
+
+    const TAB_FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-favicon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4.028 7.82a9 9 0 1 0 12.823 -3.4c-1.636 -1.02 -3.064 -1.02 -4.851 -1.02h-1.647" /><path d="M4.914 9.485c-1.756 -1.569 -.805 -5.38 .109 -6.17c.086 .896 .585 1.208 1.111 1.685c.88 -.275 1.313 -.282 1.867 0c.82 -.91 1.694 -2.354 2.628 -2.093c-1.082 1.741 -.07 3.733 1.371 4.173c-.17 .975 -1.484 1.913 -2.76 2.686c-1.296 .938 -.722 1.85 0 2.234c.949 .506 3.611 -1 4.545 .354c-1.698 .102 -1.536 3.107 -3.983 2.727c2.523 .957 4.345 .462 5.458 -.34c1.965 -1.52 2.879 -3.542 2.879 -5.557c-.014 -1.398 .194 -2.695 -1.26 -4.75" /></svg>`;
+
+    const tabBar = document.getElementById('tab-bar');
+    const newTabBtn = document.getElementById('new-tab-btn');
+    const addressInput = document.getElementById('address-input');
+    const mainFrame = document.getElementById('main-frame');
+    const contextMenu = document.getElementById('tab-context-menu');
+
+    let tabs = [
+        {
+            title: 'Firefox PWA',
+            url: 'firefox:about',
+            favicon: TAB_FAVICON
+        }
+    ];
+    let activeTab = 0;
+    let tabContextIndex = null;
+
+    function isFirefoxPage(url) {
+        return url.startsWith('firefox:');
+    }
+    function getDataUriForFirefoxPage(url) {
+        return FIREFOX_PAGES[url] || "data:text/html,<h1>Unknown firefox: page</h1>";
+    }
+    function isWebUrl(url) {
+        return /^https?:\/\/[\w\-\.]+/i.test(url);
+    }
+
+    // Tabs rendering
+    function renderTabs() {
+        [...tabBar.querySelectorAll('.tab')].forEach(tab => tab.remove());
+        tabs.forEach((tab, idx) => {
+            const tabDiv = document.createElement('div');
+            tabDiv.className = 'tab' + (idx === activeTab ? ' active' : '');
+            tabDiv.title = tab.title;
+            tabDiv.tabIndex = 0;
+            const faviconSpan = document.createElement('span');
+            faviconSpan.innerHTML = tab.favicon;
+            tabDiv.appendChild(faviconSpan);
+            const span = document.createElement('span');
+            span.textContent = tab.title.length > 20 ? tab.title.substring(0, 17) + '…' : tab.title;
+            tabDiv.appendChild(span);
+            if (tabs.length > 1) {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'close-btn';
+                closeBtn.innerHTML = '×';
+                closeBtn.onclick = (e) => { e.stopPropagation(); closeTab(idx); };
+                tabDiv.appendChild(closeBtn);
+            }
+            tabDiv.onclick = () => setActiveTab(idx);
+            tabDiv.oncontextmenu = (e) => {
+                e.preventDefault();
+                tabContextIndex = idx;
+                showTabContextMenu(e.clientX, e.clientY);
+            };
+            tabBar.insertBefore(tabDiv, newTabBtn);
+        });
+    }
+
+    function setActiveTab(idx) {
+        activeTab = idx;
+        addressInput.value = tabs[activeTab].url;
+        renderTabs();
+        renderPage(tabs[activeTab].url);
+    }
+
+    function closeTab(idx) {
+        tabs.splice(idx, 1);
+        if (activeTab >= tabs.length) activeTab = tabs.length - 1;
+        setActiveTab(activeTab);
+    }
+
+    newTabBtn.onclick = () => {
+        const n = tabs.length + 1;
+        tabs.push({
+            title: `New Tab ${n}`,
+            url: "firefox:about",
+            favicon: TAB_FAVICON
+        });
+        setActiveTab(tabs.length - 1);
+    };
+
+    // Navigation logic
+    function renderPage(url) {
+        if (isFirefoxPage(url)) {
+            mainFrame.src = getDataUriForFirefoxPage(url);
+        } else if (isWebUrl(url)) {
+            mainFrame.src = url;
+        } else {
+            mainFrame.src = "data:text/html,<b>Invalid or unsupported URL</b>";
+        }
+    }
+
+    // Toolbar button handlers
+    document.getElementById('back-btn').onclick = () => { if (activeTab > 0) setActiveTab(activeTab - 1); };
+    document.getElementById('forward-btn').onclick = () => { if (activeTab < tabs.length - 1) setActiveTab(activeTab + 1); };
+    document.getElementById('reload-btn').onclick = () => renderPage(tabs[activeTab].url);
+    document.getElementById('home-btn').onclick = () => { tabs[activeTab].url = "firefox:about"; tabs[activeTab].title = "Firefox:About"; setActiveTab(activeTab); };
+
+    document.getElementById('share-btn').onclick = async () => {
+        const tab = tabs[activeTab];
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: tab.title,
+                    text: `Check this out: ${tab.title}`,
+                    url: isWebUrl(tab.url) ? tab.url : location.href
+                });
+            } catch (err) {}
+        } else {
+            alert('Web Share is not supported on this device.');
+        }
+    };
+    document.getElementById('settings-btn').onclick = () => {
+        tabs[activeTab].url = "firefox:settings";
+        tabs[activeTab].title = "Firefox:Settings";
+        setActiveTab(activeTab);
+    };
+    document.getElementById('devtools-btn').onclick = () => {
+        tabs[activeTab].url = "firefox:devtools";
+        tabs[activeTab].title = "Firefox:DevTools";
+        setActiveTab(activeTab);
+    };
+
+    // Address bar navigation
+    addressInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const url = addressInput.value.trim();
+            tabs[activeTab].url = url;
+            if (isFirefoxPage(url)) {
+                tabs[activeTab].title = url.replace('firefox:', 'Firefox:');
+            } else if (isWebUrl(url)) {
+                tabs[activeTab].title = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            } else {
+                tabs[activeTab].title = url;
+            }
+            setActiveTab(activeTab);
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey) {
+            switch (e.key.toLowerCase()) {
+                case 't': newTabBtn.click(); e.preventDefault(); break;
+                case 'w': if (tabs.length > 1) closeTab(activeTab); e.preventDefault(); break;
+                case 'tab': setActiveTab((activeTab + 1) % tabs.length); e.preventDefault(); break;
+            }
+        }
+    });
+
+    // Tab context menu
+    function showTabContextMenu(x, y) {
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
+    }
+    function hideTabContextMenu() {
+        contextMenu.style.display = 'none';
+        tabContextIndex = null;
+    }
+    contextMenu.addEventListener('mouseleave', hideTabContextMenu);
+    document.addEventListener('click', (e) => {
+        if (!contextMenu.contains(e.target)) hideTabContextMenu();
+    });
+    contextMenu.addEventListener('click', (e) => {
+        if (tabContextIndex === null || tabContextIndex === undefined) return;
+        const action = e.target.getAttribute('data-action');
+        if (action === 'reload') renderPage(tabs[tabContextIndex].url);
+        else if (action === 'duplicate') {
+            const t = tabs[tabContextIndex];
+            tabs.splice(tabContextIndex+1, 0, {...t});
+            setActiveTab(tabContextIndex+1);
+        }
+        else if (action === 'close' && tabs.length > 1) closeTab(tabContextIndex);
+        hideTabContextMenu();
+    });
+
+    // Initial render
+    renderTabs();
+    setActiveTab(0);
+    </script>
 </body>
 </html>
