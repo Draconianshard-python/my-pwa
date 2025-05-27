@@ -19,6 +19,41 @@ let tabs = [
 let activeTab = 0;
 let tabContextIndex = null;
 
+// Firefox local pages renderer
+function renderFirefoxPage(url) {
+    if (url === 'firefox:settings') {
+        return `
+          <h1>Firefox Settings</h1>
+          <ul>
+            <li><b>Home</b></li>
+            <li>Search</li>
+            <li>Privacy & Security</li>
+            <li>Sync</li>
+            <li>Extensions & Themes</li>
+            <li>Advanced</li>
+          </ul>
+          <p>These are mock settings for demonstration.</p>
+        `;
+    }
+    if (url === 'firefox:about') {
+        return `
+          <h1>About Firefox PWA</h1>
+          <p>Version: 1.0.0<br>
+          This is a Progressive Web App inspired by Firefox.</p>
+          <p>Made with ❤️ and JavaScript.</p>
+        `;
+    }
+    if (url === 'firefox:devtools') {
+        return `
+          <h1>DevTools</h1>
+          <p>This is a simulated DevTools page.</p>
+          <pre>Console output:<br>&gt; Hello, World!</pre>
+        `;
+    }
+    // Add more pages as needed
+    return `<h1>Unknown firefox: page</h1><p>No such page: <code>${url}</code></p>`;
+}
+
 // Rendering Tabs
 function renderTabs() {
     // Remove old .tab elements except new tab btn
@@ -92,21 +127,60 @@ newTabBtn.onclick = () => {
 };
 
 // Toolbar button handlers
-document.getElementById('back-btn').onclick = () => alert('Back button pressed (demo)');
-document.getElementById('forward-btn').onclick = () => alert('Forward button pressed (demo)');
+document.getElementById('back-btn').onclick = () => {
+    // Go to previous tab if possible (demo behavior)
+    if (activeTab > 0) setActiveTab(activeTab - 1);
+};
+document.getElementById('forward-btn').onclick = () => {
+    // Go to next tab if possible (demo behavior)
+    if (activeTab < tabs.length - 1) setActiveTab(activeTab + 1);
+};
 document.getElementById('reload-btn').onclick = () => setActiveTab(activeTab);
 document.getElementById('home-btn').onclick = () => setActiveTab(0);
-document.getElementById('share-btn').onclick = () => alert('Share button pressed (demo)');
-document.getElementById('settings-btn').onclick = () => alert('Settings button pressed (demo)');
-document.getElementById('devtools-btn').onclick = () => alert('Dev Tools button pressed (demo)');
+
+document.getElementById('share-btn').onclick = async () => {
+    const tab = tabs[activeTab];
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: tab.title,
+                text: `Check this out: ${tab.title}`,
+                url: tab.url
+            });
+        } catch (err) {
+            // User cancelled or error
+        }
+    } else {
+        alert('Web Share is not supported on this device.');
+    }
+};
+document.getElementById('settings-btn').onclick = () => {
+    addressInput.value = 'firefox:settings';
+    tabs[activeTab].url = 'firefox:settings';
+    tabs[activeTab].title = "Firefox:Settings";
+    tabs[activeTab].content = renderFirefoxPage('firefox:settings');
+    setActiveTab(activeTab);
+};
+document.getElementById('devtools-btn').onclick = () => {
+    addressInput.value = 'firefox:devtools';
+    tabs[activeTab].url = 'firefox:devtools';
+    tabs[activeTab].title = "Firefox:DevTools";
+    tabs[activeTab].content = renderFirefoxPage('firefox:devtools');
+    setActiveTab(activeTab);
+};
 
 // Address bar navigation
 addressInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const url = addressInput.value.trim();
         tabs[activeTab].url = url;
-        tabs[activeTab].title = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        tabs[activeTab].content = `<h1>${url}</h1><p>You navigated to <b>${url}</b>.</p>`;
+        if (url.startsWith('firefox:')) {
+            tabs[activeTab].title = url.replace('firefox:', 'Firefox:');
+            tabs[activeTab].content = renderFirefoxPage(url);
+        } else {
+            tabs[activeTab].title = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            tabs[activeTab].content = `<h1>${url}</h1><p>You navigated to <b>${url}</b>.</p>`;
+        }
         setActiveTab(activeTab);
     }
 });
@@ -140,7 +214,7 @@ document.addEventListener('click', (e) => {
     if (!contextMenu.contains(e.target)) hideTabContextMenu();
 });
 contextMenu.addEventListener('click', (e) => {
-    if (!tabContextIndex && tabContextIndex !== 0) return;
+    if (tabContextIndex === null || tabContextIndex === undefined) return;
     const action = e.target.getAttribute('data-action');
     if (action === 'reload') setActiveTab(tabContextIndex);
     else if (action === 'duplicate') {
